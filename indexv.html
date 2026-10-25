@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nilu's BCA Quiz</title>
+  <style>
+    /* =====================================================
+       PART 1: COLORS (change colors here, in one place!)
+       ===================================================== */
+    :root[data-theme="dark"] {
+      --bg: #0b1020;
+      --bg2: #121a33;
+      --card: #141c38;
+      --text: #e6edf7;
+      --muted: #8fa0c4;
+      --accent: #22d3ee;
+      --accent2: #7c83f7;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --warn: #f59e0b;
+      --border: #243055;
+      --glow: 0 0 14px rgba(34, 211, 238, 0.25);
+    }
+    :root[data-theme="light"] {
+      --bg: #fdf2f8;
+      --bg2: #f3e8ff;
+      --card: #ffffff;
+      --text: #3b2a4d;
+      --muted: #7c6a90;
+      --accent: #ec4899;
+      --accent2: #8b5cf6;
+      --good: #16a34a;
+      --bad: #dc2626;
+      --warn: #ea8a0c;
+      --border: #f0d3e6;
+      --glow: 0 4px 14px rgba(236, 72, 153, 0.18);
+    }
+
+    /* =====================================================
+       PART 2: BASIC LOOK
+       ===================================================== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(160deg, var(--bg), var(--bg2));
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .mono { font-family: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace; }
+    .hidden { display: none !important; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+
+    button { font-family: inherit; font-size: 16px; cursor: pointer; border: none; }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+    .brand { font-weight: 700; color: var(--accent); font-size: 17px; }
+    .tools { display: flex; gap: 8px; align-items: center; }
+    .chip {
+      background: var(--card); border: 1px solid var(--border); color: var(--text);
+      border-radius: 99px; padding: 6px 12px; font-size: 14px;
+    }
+    .chip:hover { border-color: var(--accent); }
+
+    /* ---------- Hero (home top) ---------- */
+    .hero { text-align: center; padding: 28px 0 8px; }
+    .girl { width: 150px; height: 165px; animation: float 3s ease-in-out infinite; }
+    .arm { transform-origin: 132px 150px; animation: salute 1.6s ease-in-out infinite; }
+    @keyframes salute { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-7deg); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .hero h1 { font-size: 26px; margin-top: 6px; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); margin-top: 6px; }
+    .cursor { animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ---------- Streak banner ---------- */
+    .banner {
+      background: color-mix(in srgb, var(--bad) 14%, var(--card));
+      border: 1px solid var(--bad); border-radius: 14px;
+      padding: 14px; margin: 16px 0 0; font-size: 15px;
+    }
+    .banner .row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+    .btn {
+      background: var(--accent); color: #04121a; font-weight: 700;
+      padding: 12px 18px; border-radius: 12px; box-shadow: var(--glow);
+    }
+    :root[data-theme="light"] .btn { color: #fff; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); box-shadow: none; }
+    .btn.full { width: 100%; }
+
+    /* ---------- Topic cards ---------- */
+    h2.section { font-size: 14px; color: var(--muted); margin: 26px 0 10px; font-weight: 600; letter-spacing: .5px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 560px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    .topic {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px 12px; text-align: center; color: var(--text);
+      transition: transform .15s, border-color .15s, box-shadow .15s;
+    }
+    .topic:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: var(--glow); }
+    .ico {
+      display: grid; place-items: center; width: 54px; height: 54px; margin: 0 auto 8px;
+      border-radius: 50%; font-size: 28px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 25%, transparent), color-mix(in srgb, var(--accent2) 25%, transparent));
+    }
+    .tname { display: block; font-weight: 600; font-size: 14px; }
+    .tbest { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ---------- Footer ---------- */
+    .links { display: grid; gap: 12px; margin-top: 8px; }
+    @media (min-width: 560px) { .links { grid-template-columns: 1fr 1fr; } }
+    .linkcard {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px; display: flex; gap: 12px; align-items: center;
+    }
+    .linkcard .info { flex: 1; min-width: 0; }
+    .linkcard b { display: block; }
+    .linkcard small { color: var(--muted); }
+    .linkcard a.btn { text-decoration: none; font-size: 14px; padding: 10px 14px; white-space: nowrap; }
+    footer { text-align: center; color: var(--muted); font-size: 13px; padding: 28px 0 40px; }
+
+    /* ---------- Quiz screen ---------- */
+    .qbox { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-top: 18px; box-shadow: var(--glow); }
+    .qtop { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .qtopic { color: var(--accent); font-weight: 700; font-size: 14px; }
+    .badge { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; border: 1px solid currentColor; }
+    .lv0 { color: var(--good); } .lv1 { color: var(--warn); } .lv2 { color: var(--bad); }
+    .bar { height: 6px; background: var(--border); border-radius: 99px; margin: 12px 0; overflow: hidden; }
+    .bar div { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .3s; }
+    .status { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); }
+    .lives { display: flex; gap: 4px; align-items: center; }
+    .pc.on { color: var(--accent); filter: drop-shadow(0 0 4px var(--accent)); }
+    .pc.off { color: var(--muted); opacity: .6; }
+    .question { font-size: 19px; line-height: 1.45; margin: 16px 0; font-weight: 600; }
+    .question::before { content: "> "; color: var(--accent); }
+    .opt {
+      display: block; width: 100%; text-align: left; margin-top: 10px; padding: 14px;
+      background: var(--bg2); color: var(--text); border: 2px solid var(--border); border-radius: 12px;
+    }
+    .opt:hover:not(:disabled) { border-color: var(--accent); }
+    .opt:disabled { cursor: default; }
+    .opt.correct { background: color-mix(in srgb, var(--good) 22%, var(--card)); border-color: var(--good); }
+    .opt.wrong { background: color-mix(in srgb, var(--bad) 22%, var(--card)); border-color: var(--bad); }
+    .feedback { min-height: 24px; margin-top: 14px; font-weight: 600; }
+    .qfoot { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+
+    /* ---------- Result screen ---------- */
+    .rtitle { text-align: center; margin-top: 24px; }
+    .rtitle h1 { font-size: 24px; }
+    .rtitle p { color: var(--muted); margin-top: 4px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0; }
+    .stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 4px; text-align: center; }
+    .stat b { display: block; font-size: 18px; color: var(--accent); }
+    .stat small { color: var(--muted); font-size: 11px; }
+    .party { font-size: 54px; text-align: center; margin-top: 18px; }
+    .chart { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+    .crow { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 13px; }
+    .clab { width: 44px; color: var(--muted); }
+    .ctrack { flex: 1; background: var(--bg2); border-radius: 99px; height: 14px; overflow: hidden; }
+    .cfill { height: 100%; border-radius: 99px; }
+    .cfill.fast { background: var(--good); }
+    .cfill.slow { background: var(--warn); }
+    .ctime { width: 46px; text-align: right; }
+    .cmark { width: 18px; font-weight: 700; }
+    .crow.ok .cmark { color: var(--good); }
+    .crow.bad .cmark { color: var(--bad); }
+    .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 10px; flex-wrap: wrap; }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; }
+    .review-item { background: color-mix(in srgb, var(--bad) 10%, var(--card)); border-left: 4px solid var(--bad); padding: 10px 12px; border-radius: 10px; margin-top: 10px; font-size: 14px; }
+    .review-item b { color: var(--good); }
+    .actions { display: flex; gap: 10px; margin: 18px 0 8px; }
+    .actions .btn { flex: 1; }
+
+    /* ---------- Toast + confetti ---------- */
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      background: var(--card); color: var(--text); border: 1px solid var(--accent);
+      padding: 10px 16px; border-radius: 12px; z-index: 30; max-width: 90vw; font-size: 14px; box-shadow: var(--glow);
+    }
+    .confetti span { position: fixed; top: -30px; font-size: 26px; z-index: 40; pointer-events: none; animation: fall linear forwards; }
+    @keyframes fall { to { transform: translateY(115vh) rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- =====================================================
+       PART 3: THE PAGE (HTML)
+       ===================================================== -->
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand mono">&lt;Nilu/&gt; BCA</div>
+      <div class="tools">
+        <span class="chip" id="streakChip">🔥 0</span>
+        <button class="chip" id="soundBtn" title="Sound on/off">🔊</button>
+        <button class="chip" id="themeBtn" title="Switch theme">☀️ Soft</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ========== HOME SCREEN ========== -->
+    <section id="home">
+      <div class="hero">
+        <!-- Animated girl saluting (drawn with SVG, no image file needed) -->
+        <svg class="girl" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" aria-label="Girl saluting">
+          <ellipse cx="100" cy="88" rx="50" ry="54" fill="#2b1b3d"/>
+          <rect x="62" y="136" width="76" height="70" rx="22" fill="var(--accent2)"/>
+          <rect x="92" y="120" width="16" height="22" fill="#f2c4a0"/>
+          <circle cx="100" cy="94" r="38" fill="#f2c4a0"/>
+          <path d="M62 90 Q68 50 100 48 Q134 50 138 90 Q120 66 100 70 Q80 66 62 90Z" fill="#2b1b3d"/>
+          <circle cx="87" cy="97" r="4.5" fill="#222"/><circle cx="113" cy="97" r="4.5" fill="#222"/>
+          <circle cx="88.5" cy="95.5" r="1.5" fill="#fff"/><circle cx="114.5" cy="95.5" r="1.5" fill="#fff"/>
+          <circle cx="78" cy="108" r="6" fill="#f08a8a" opacity=".45"/><circle cx="122" cy="108" r="6" fill="#f08a8a" opacity=".45"/>
+          <path d="M89 111 Q100 123 111 111" stroke="#b0413e" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M70 150 L58 186" stroke="var(--accent2)" stroke-width="14" stroke-linecap="round"/>
+          <circle cx="57" cy="193" r="8" fill="#f2c4a0"/>
+          <g class="arm">
+            <path d="M132 152 L162 120 L126 68" stroke="var(--accent2)" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="124" cy="64" r="8" fill="#f2c4a0"/>
+          </g>
+        </svg>
+        <h1 class="mono">Welcome to <span>Nilu's</span> BCA Quiz</h1>
+        <p class="mono">&gt; pick a topic to begin<span class="cursor">_</span></p>
+      </div>
+
+      <!-- Shows only when the daily streak is broken -->
+      <div class="banner hidden" id="banner">
+        <div id="bannerText"></div>
+        <div class="row">
+          <button class="btn" id="rescueBtn">Save my streak (15 questions)</button>
+          <button class="btn ghost" id="resetStreakBtn">Start again from 0</button>
+        </div>
+      </div>
+
+      <h2 class="section mono">// TOPICS</h2>
+      <div class="grid" id="grid"></div>
+
+      <h2 class="section mono">// FOLLOW NILU</h2>
+      <div class="links">
+        <div class="linkcard">
+          <svg width="44" height="44" viewBox="0 0 44 44"><rect width="44" height="44" rx="12" fill="#ef4444"/><path d="M18 14l13 8-13 8z" fill="#fff"/></svg>
+          <div class="info"><b>Nilu Sharma</b><small>YouTube channel</small></div>
+          <a class="btn" href="https://youtube.com/@nilusharma-h7d" target="_blank" rel="noopener">Watch</a>
+        </div>
+        <div class="linkcard">
+          <svg width="44" height="44" viewBox="0 0 44 44"><defs><linearGradient id="ig" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f59e0b"/><stop offset=".5" stop-color="#ec4899"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs><rect width="44" height="44" rx="12" fill="url(#ig)"/><rect x="12" y="12" width="20" height="20" rx="6" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="22" cy="22" r="4.6" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="28.5" cy="15.5" r="1.4" fill="#fff"/></svg>
+          <div class="info"><b>@noor_161025</b><small>Study material</small></div>
+          <a class="btn" href="https://instagram.com/noor_161025" target="_blank" rel="noopener">Follow</a>
+        </div>
+        <!-- To add your email later, copy a linkcard above and use: href="mailto:yourname@gmail.com" -->
+      </div>
+
+      <footer class="mono">Built by Nilu · BCA Sem 1 · learning in public 🚀</footer>
+    </section>
+
+    <!-- ========== QUIZ SCREEN ========== -->
+    <section id="quiz" class="hidden">
+      <div class="qbox">
+        <div class="qtop">
+          <span class="qtopic mono" id="qTopic"></span>
+          <span class="badge" id="qLevel"></span>
+        </div>
+        <div class="bar"><div id="barFill"></div></div>
+        <div class="status">
+          <span id="qCount"></span>
+          <span id="runInfo"></span>
+          <span class="lives" id="lives"></span>
+        </div>
+        <div class="question" id="question"></div>
+        <div id="options"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="qfoot">
+          <button class="btn ghost" id="quitBtn">← Quit</button>
+          <button class="btn hidden" id="nextBtn">Next →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== RESULT SCREEN ========== -->
+    <section id="result" class="hidden">
+      <div class="party hidden" id="party">🥳🔥😄🎉</div>
+      <div class="rtitle">
+        <h1 class="mono" id="rTitle"></h1>
+        <p id="rSub"></p>
+      </div>
+      <div class="stats" id="stats"></div>
+      <h2 class="section mono">// TIME CHART</h2>
+      <div class="chart">
+        <div id="chart"></div>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--good)"></i>Quick answer</span>
+          <span><i class="dot" style="background:var(--warn)"></i>Took long</span>
+          <span><b style="color:var(--bad)">✗</b> Wrong</span>
+        </div>
+      </div>
+      <div id="reviewBox" class="hidden">
+        <h2 class="section mono">// REVIEW YOUR MISTAKES</h2>
+        <div id="review"></div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="homeBtn">Home</button>
+        <button class="btn" id="againBtn">Play again</button>
+      </div>
+      <footer class="mono">Built by Nilu · BCA Sem 1 🚀</footer>
+    </section>
+
+  </main>
+
+  <div class="confetti" id="confetti"></div>
+
+  <!-- =====================================================
+       PART 4: QUESTIONS  (this is the part YOU edit!)
+       How to add a question: copy one line and change it.
+       Format:  [level, "Question?", "RIGHT answer", "wrong 1", "wrong 2", "wrong 3"],
+       level: 0 = Easy, 1 = Medium, 2 = Hard
+       Always write the RIGHT answer first. The quiz shuffles the options itself.
+       Keep the quotes " " and the comma at the end of each line!
+       ===================================================== -->
+  <script id="questions">
+    const BANK = {
+      c: [
+        [0, "Which symbol ends a statement in C?", ";", ":", ".", ","],
+        [0, "Which function prints output in C?", "printf()", "scanf()", "input()", "echo()"],
+        [0, "Which header file is needed for printf()?", "stdio.h", "conio.h", "string.h", "math.h"],
+        [0, "Which function is where a C program starts running?", "main()", "start()", "begin()", "run()"],
+        [0, "Which format specifier is used for an int?", "%d", "%f", "%c", "%s"],
+        [0, "Which operator gives the address of a variable?", "&", "*", "#", "@"],
+        [0, "Which is a valid comment in C?", "/* text */", "# text", "<!-- text -->", "-- text"],
+        [0, "Which data type stores decimal numbers?", "float", "int", "char", "void"],
+        [1, "What is the output of printf(\"%d\", 5/2); ?", "2", "2.5", "3", "2.0"],
+        [1, "What is the value of 7 % 3 ?", "1", "2", "0", "3"],
+        [1, "Which loop always runs at least once?", "do-while", "for", "while", "foreach"],
+        [1, "In C, array index starts from?", "0", "1", "-1", "2"],
+        [1, "Which keyword exits a loop immediately?", "break", "stop", "exit", "continue"],
+        [1, "What does strlen(\"BCA\") return?", "3", "4", "2", "0"],
+        [2, "What is sizeof(char) always equal to?", "1", "2", "4", "8"],
+        [2, "Which is the correct way to declare a pointer to an int?", "int *p;", "int p*;", "*int p;", "pointer int p;"],
+        [2, "What does free() do?", "Releases dynamically allocated memory", "Allocates memory", "Closes a file", "Clears the screen"],
+        [2, "Which function allocates memory dynamically?", "malloc()", "alloc()", "new()", "create()"],
+        [2, "What is the default value of an uninitialized global int variable?", "0", "Garbage value", "1", "-1"],
+        [2, "What does the 'static' keyword do to a local variable?", "Keeps its value between function calls", "Makes it a constant", "Makes it visible to all files", "Frees its memory at the end"]
+      ],
+      office: [
+        [0, "Which shortcut copies the selected text?", "Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + Z"],
+        [0, "Which shortcut pastes copied text?", "Ctrl + V", "Ctrl + P", "Ctrl + C", "Ctrl + B"],
+        [0, "What is the file extension of a Word document?", ".docx", ".xlsx", ".pptx", ".txt"],
+        [0, "Which app is mainly used to create spreadsheets?", "Excel", "Word", "PowerPoint", "Paint"],
+        [0, "Which shortcut saves a file?", "Ctrl + S", "Ctrl + P", "Ctrl + N", "Ctrl + O"],
+        [0, "Which shortcut undoes the last action?", "Ctrl + Z", "Ctrl + Y", "Ctrl + U", "Ctrl + A"],
+        [0, "The small pictures on the Windows desktop are called?", "Icons", "Tabs", "Menus", "Frames"],
+        [0, "Which software is used to make presentations?", "PowerPoint", "Excel", "Access", "Notepad"],
+        [1, "Which Excel function adds a range of numbers?", "SUM", "ADD", "TOTAL", "PLUS"],
+        [1, "Every Excel formula normally starts with which symbol?", "=", "#", "@", "$"],
+        [1, "Which shortcut opens Task Manager directly?", "Ctrl + Shift + Esc", "Ctrl + Alt + T", "Alt + F4", "Win + L"],
+        [1, "Which Windows shortcut locks the computer?", "Win + L", "Win + D", "Win + E", "Win + R"],
+        [1, "Which Word tab has the Spelling & Grammar tool?", "Review", "Insert", "View", "Layout"],
+        [1, "The meeting point of a row and a column in Excel is called?", "Cell", "Range", "Sheet", "Table"],
+        [2, "Which Excel function searches the first column of a table and returns a value from another column?", "VLOOKUP", "HLOOKUP", "COUNTIF", "SUMIF"],
+        [2, "Which Windows feature lets you undo system changes using a saved point?", "System Restore", "Defragmenter", "Disk Cleanup", "Task Scheduler"],
+        [2, "Which Excel shortcut inserts today's date?", "Ctrl + ;", "Ctrl + D", "Ctrl + T", "Ctrl + Shift + D"],
+        [2, "In PowerPoint, which view shows all slides as thumbnails to rearrange?", "Slide Sorter", "Normal", "Reading View", "Notes Page"],
+        [2, "Which Windows tool shows running programs and their CPU and memory use?", "Task Manager", "Control Panel", "File Explorer", "Notepad"],
+        [2, "In Word, what does Mail Merge do?", "Makes personalised copies of a letter for many people", "Joins two documents into one", "Compresses a document", "Translates a document"]
+      ],
+      evs: [
+        [0, "Which gas do plants absorb for photosynthesis?", "Carbon dioxide", "Oxygen", "Nitrogen", "Hydrogen"],
+        [0, "Which layer protects Earth from harmful UV rays?", "Ozone layer", "Troposphere", "Mesosphere", "Ionosphere"],
+        [0, "World Environment Day is celebrated on?", "5 June", "22 April", "16 September", "21 March"],
+        [0, "Which of these is a renewable source of energy?", "Solar energy", "Coal", "Petroleum", "Natural gas"],
+        [0, "Which gas is mainly responsible for global warming?", "Carbon dioxide", "Oxygen", "Nitrogen", "Argon"],
+        [0, "Cutting down forests on a large scale is called?", "Deforestation", "Afforestation", "Reforestation", "Conservation"],
+        [0, "Which of these is biodegradable?", "Vegetable peels", "Plastic bag", "Glass bottle", "Aluminium can"],
+        [0, "The three Rs of waste management are Reduce, Reuse and?", "Recycle", "Remove", "Repair", "Reject"],
+        [1, "Which pollutant mainly causes acid rain?", "Sulphur dioxide", "Helium", "Oxygen", "Argon"],
+        [1, "What is an ecosystem?", "Living things interacting with their environment", "Only the plants of a forest", "A group of animals of one species", "Only non-living things"],
+        [1, "Which of these is a producer in a food chain?", "Green plants", "Deer", "Tiger", "Eagle"],
+        [1, "The Chipko Movement was started to protect?", "Trees", "Rivers", "Tigers", "Mountains"],
+        [1, "Which Indian Act of 1986 protects the environment?", "Environment (Protection) Act", "Wildlife Protection Act", "Water Act", "Forest Act"],
+        [1, "Which gas leaked in the 1984 Bhopal gas tragedy?", "Methyl isocyanate", "Chlorine", "Ammonia", "Carbon monoxide"],
+        [2, "Which treaty was made to protect the ozone layer?", "Montreal Protocol", "Kyoto Protocol", "Paris Agreement", "Basel Convention"],
+        [2, "Which 2015 agreement aims to keep global warming well below 2°C?", "Paris Agreement", "Kyoto Protocol", "Montreal Protocol", "Ramsar Convention"],
+        [2, "What does BOD stand for in water pollution?", "Biochemical Oxygen Demand", "Biological Oxygen Dose", "Basic Organic Decay", "Bio Organic Demand"],
+        [2, "Which of these is a biodiversity hotspot in India?", "Western Ghats", "Thar Desert", "Deccan Plateau", "Indo-Gangetic Plain"],
+        [2, "The Ramsar Convention deals with protection of?", "Wetlands", "Forests", "Deserts", "Glaciers"],
+        [2, "What mainly causes eutrophication of a lake?", "Excess nutrients like nitrates and phosphates", "Oil spills", "Acid rain", "Cold weather"]
+      ],
+      iks: [
+        [0, "Which is the oldest Veda?", "Rigveda", "Samaveda", "Yajurveda", "Atharvaveda"],
+        [0, "How many Vedas are there?", "4", "3", "5", "6"],
+        [0, "Who is traditionally known as the author of the Mahabharata?", "Ved Vyasa", "Valmiki", "Kalidasa", "Tulsidas"],
+        [0, "Who wrote the Ramayana?", "Valmiki", "Vyasa", "Kalidasa", "Panini"],
+        [0, "Which ancient Indian system of medicine is based on balancing the doshas?", "Ayurveda", "Homeopathy", "Allopathy", "Naturopathy"],
+        [0, "Which ancient university in Bihar was a famous centre of learning?", "Nalanda", "Oxford", "Harvard", "Al-Azhar"],
+        [0, "Which important idea did ancient India give to the world of mathematics?", "Zero as a number", "The telephone", "The steam engine", "The printing press"],
+        [0, "The Bhagavad Gita is a part of which epic?", "Mahabharata", "Ramayana", "Puranas", "Upanishads"],
+        [1, "Who wrote the Arthashastra?", "Chanakya (Kautilya)", "Kalidasa", "Banabhatta", "Ashoka"],
+        [1, "Which mathematician wrote the Aryabhatiya?", "Aryabhata", "Brahmagupta", "Bhaskara", "Ramanujan"],
+        [1, "Who wrote the Sanskrit grammar book Ashtadhyayi?", "Panini", "Patanjali", "Kalidasa", "Vyasa"],
+        [1, "Who compiled the Yoga Sutras?", "Patanjali", "Panini", "Charaka", "Kapila"],
+        [1, "Charaka Samhita is a classic text of which field?", "Ayurveda (medicine)", "Astronomy", "Grammar", "Politics"],
+        [1, "Which ancient centre of learning was in present-day Pakistan?", "Takshashila (Taxila)", "Nalanda", "Vikramashila", "Odantapuri"],
+        [2, "Who is known as the 'Father of Surgery' in ancient India?", "Sushruta", "Charaka", "Aryabhata", "Varahamihira"],
+        [2, "Which ancient astronomer gave pi as 62832/20000 (about 3.1416)?", "Aryabhata", "Bhaskara II", "Brahmagupta", "Varahamihira"],
+        [2, "Who wrote the Brahmasphutasiddhanta, which gave rules for zero?", "Brahmagupta", "Aryabhata", "Bhaskara I", "Mahavira"],
+        [2, "In which Upanishad does the line 'Satyameva Jayate' appear?", "Mundaka Upanishad", "Isha Upanishad", "Kena Upanishad", "Katha Upanishad"],
+        [2, "The Sulba Sutras mainly deal with?", "Geometry for building altars", "Grammar", "Medicine", "Politics"],
+        [2, "Which of the six Darshanas (schools) is linked with sage Kapila?", "Samkhya", "Yoga", "Nyaya", "Vaisheshika"]
+      ],
+      math: [
+        [0, "What is the value of 2 to the power 3?", "8", "6", "9", "5"],
+        [0, "A set with no elements is called?", "Empty set", "Universal set", "Finite set", "Subset"],
+        [0, "What is the decimal number 5 in binary?", "101", "110", "100", "111"],
+        [0, "Which of these is a prime number?", "7", "9", "15", "21"],
+        [0, "What is the LCM of 4 and 6?", "12", "24", "10", "2"],
+        [0, "What is the HCF of 12 and 18?", "6", "3", "9", "12"],
+        [0, "What is the square root of 144?", "12", "14", "11", "16"],
+        [0, "What is 5! (5 factorial)?", "120", "25", "60", "24"],
+        [1, "If A = {1,2,3} and B = {3,4}, what is A ∪ B?", "{1,2,3,4}", "{3}", "{1,2,4}", "{1,2}"],
+        [1, "For the same sets A and B, what is A ∩ B?", "{3}", "{1,2,3,4}", "{1,2}", "{4}"],
+        [1, "How many subsets does a set with 3 elements have?", "8", "6", "3", "9"],
+        [1, "What is binary 1010 in decimal?", "10", "12", "8", "5"],
+        [1, "Which matrix has 1s on the main diagonal and 0s everywhere else?", "Identity matrix", "Zero matrix", "Row matrix", "Column matrix"],
+        [1, "What is the negation of 'It is raining'?", "It is not raining", "It is raining heavily", "It will rain", "The rain stops"],
+        [2, "How many elements are in the power set of a set with 4 elements?", "16", "8", "4", "12"],
+        [2, "What is the determinant of the matrix [[1, 2], [3, 4]]?", "-2", "2", "10", "-10"],
+        [2, "In logic, the statement p → q is false only when?", "p is true and q is false", "p is false and q is true", "both are true", "both are false"],
+        [2, "What is decimal 13 in binary?", "1101", "1011", "1110", "1001"],
+        [2, "In how many ways can 3 different books be arranged on a shelf?", "6", "3", "9", "12"],
+        [2, "A relation that is reflexive, symmetric and transitive is called?", "Equivalence relation", "Partial order", "Function", "Identity set"]
+      ],
+      web: [
+        [0, "HTML stands for?", "HyperText Markup Language", "HyperTool Making Language", "High Text Machine Language", "Home Text Markup Language"],
+        [0, "Which tag makes the biggest heading?", "<h1>", "<h6>", "<head>", "<p>"],
+        [0, "Which tag creates a paragraph?", "<p>", "<para>", "<pg>", "<text>"],
+        [0, "Which tag gives a line break?", "<br>", "<hr>", "<b>", "<brk>"],
+        [0, "Which tag creates a button?", "<button>", "<btn>", "<click>", "<press>"],
+        [0, "Which tag inserts an image?", "<img>", "<image>", "<pic>", "<src>"],
+        [0, "CSS stands for?", "Cascading Style Sheets", "Creative Style System", "Computer Style Sheets", "Colorful Style Sheets"],
+        [0, "Which CSS property changes the text color?", "color", "font-color", "text-color", "fg-color"],
+        [1, "Which tag creates a hyperlink?", "<a>", "<link>", "<href>", "<url>"],
+        [1, "Which CSS property changes the background color?", "background-color", "bgcolor", "color-bg", "back-color"],
+        [1, "Which tag creates a bullet (unordered) list?", "<ul>", "<ol>", "<li>", "<list>"],
+        [1, "How do you select an element with id 'box' in CSS?", "#box", ".box", "box", "*box"],
+        [1, "Which CSS property controls the space OUTSIDE an element?", "margin", "padding", "border", "spacing"],
+        [1, "Where is the text inside the <title> tag shown?", "On the browser tab", "In the page body", "In the footer", "Inside an image"],
+        [2, "Which CSS declaration creates a flexible box layout?", "display: flex", "flex: display", "layout: flex", "box: flex"],
+        [2, "In CSS, padding is the space?", "Inside the element, between content and border", "Outside the border", "Between two web pages", "Around the browser window"],
+        [2, "Which attribute gives alternate text for an image?", "alt", "title", "src", "name"],
+        [2, "What does <!DOCTYPE html> do?", "Tells the browser the page is HTML5", "Creates a comment", "Imports a CSS file", "Starts a script"],
+        [2, "Which CSS unit is relative to the screen width?", "vw", "px", "pt", "cm"],
+        [2, "Which HTML tag links an external CSS file?", "<link>", "<style src>", "<css>", "<script>"]
+      ],
+      java: [
+        [0, "Who developed Java?", "James Gosling", "Dennis Ritchie", "Bjarne Stroustrup", "Guido van Rossum"],
+        [0, "Which method is the entry point of a Java program?", "main()", "start()", "run()", "init()"],
+        [0, "Java source files have which extension?", ".java", ".class", ".jar", ".js"],
+        [0, "Which keyword creates an object?", "new", "create", "object", "make"],
+        [0, "Which Java data type stores whole numbers?", "int", "double", "boolean", "String"],
+        [0, "Which statement prints a line in Java?", "System.out.println()", "printf()", "echo", "cout"],
+        [0, "Java is famous for being?", "Platform independent", "Only for Windows", "Only for Linux", "Hardware dependent"],
+        [0, "Which symbols start a single-line comment in Java?", "//", "#", "--", "<!--"],
+        [1, "JVM stands for?", "Java Virtual Machine", "Java Variable Method", "Joint Virtual Memory", "Java Visual Machine"],
+        [1, "Which keyword is used for inheritance between classes?", "extends", "inherits", "derives", "subclass"],
+        [1, "What is the default value of an int instance variable?", "0", "null", "1", "undefined"],
+        [1, "Which collection does NOT allow duplicate elements?", "Set", "List", "ArrayList", "LinkedList"],
+        [1, "Which keyword stops a class from being inherited?", "final", "static", "private", "abstract"],
+        [1, "JDK stands for?", "Java Development Kit", "Java Debug Kit", "Java Deployment Key", "Java Driver Kit"],
+        [2, "Java source code is first compiled into?", "Bytecode", "Machine code", "Assembly", "Another source file"],
+        [2, "What is method overloading?", "Same method name with different parameters", "Same method in parent and child class", "A method calling itself", "A method with no body"],
+        [2, "Which keyword refers to the current object?", "this", "self", "current", "me"],
+        [2, "Which exception occurs when an int is divided by zero?", "ArithmeticException", "NullPointerException", "IOException", "ClassCastException"],
+        [2, "Which class is the parent of all classes in Java?", "Object", "Class", "Main", "System"],
+        [2, "An interface in Java can contain?", "Abstract method declarations and constants", "Only private variables", "Only the main method", "Only constructors"]
+      ],
+      python: [
+        [0, "Which keyword defines a function in Python?", "def", "func", "function", "define"],
+        [0, "How do you start a comment in Python?", "#", "//", "/*", "--"],
+        [0, "What does print('Hi') do?", "Shows Hi on the screen", "Reads input", "Deletes Hi", "Saves Hi in a file"],
+        [0, "What is the output of len('BCA')?", "3", "2", "4", "Error"],
+        [0, "[1, 2, 3] is which Python data type?", "List", "Tuple", "Set", "Dictionary"],
+        [0, "Which function reads input from the user?", "input()", "scanf()", "read()", "get()"],
+        [0, "What is the file extension of a Python file?", ".py", ".pt", ".python", ".pyt"],
+        [0, "What is the output of 10 // 3 ?", "3", "3.33", "4", "1"],
+        [1, "What is the output of 2 ** 3 ?", "8", "6", "5", "9"],
+        [1, "Which Python data type is immutable (cannot be changed)?", "Tuple", "List", "Dictionary", "Set"],
+        [1, "How do you find the type of a variable x?", "type(x)", "typeof(x)", "x.type", "gettype(x)"],
+        [1, "Which keyword is used to loop over items?", "for", "foreach", "loop", "iterate"],
+        [1, "What is the output of 'ab' * 2 ?", "abab", "ab2", "aabb", "Error"],
+        [1, "Which method adds an item to the end of a list?", "append()", "add()", "push()", "insert_end()"],
+        [2, "What does range(3) generate?", "0, 1, 2", "1, 2, 3", "0, 1, 2, 3", "3 only"],
+        [2, "Which of these is a dictionary?", "{'a': 1}", "[1, 2]", "(1, 2)", "{1, 2}"],
+        [2, "What is the output of bool('') ?", "False", "True", "None", "Error"],
+        [2, "What does 'self' represent in a class method?", "The current object", "The parent class", "The module", "A global variable"],
+        [2, "How does Python handle errors?", "try ... except", "try ... catch", "do ... rescue", "if ... error"],
+        [2, "What is the output of list(range(1, 6))[-1] ?", "5", "6", "1", "Error"]
+      ],
+      dbms: [
+        [0, "DBMS stands for?", "Database Management System", "Data Backup Management System", "Digital Base Making System", "Data Basic Memory System"],
+        [0, "SQL stands for?", "Structured Query Language", "Simple Question Language", "Sorted Query List", "System Query Logic"],
+        [0, "Which SQL command fetches data?", "SELECT", "INSERT", "UPDATE", "DELETE"],
+        [0, "Which SQL command adds a new row?", "INSERT", "SELECT", "CREATE", "DROP"],
+        [0, "Which key uniquely identifies each row of a table?", "Primary key", "Foreign key", "Sort key", "Extra key"],
+        [0, "A table is made of rows and?", "Columns", "Pages", "Files", "Folders"],
+        [0, "Which command deletes a whole table?", "DROP TABLE", "REMOVE TABLE", "CUT TABLE", "ERASE TABLE"],
+        [0, "A row in a table is also called?", "Record (tuple)", "Field", "Attribute", "Domain"],
+        [1, "Which SQL clause filters rows?", "WHERE", "ORDER BY", "GROUP BY", "FROM"],
+        [1, "Which command changes existing data in a table?", "UPDATE", "SELECT", "INSERT", "DROP"],
+        [1, "Removing repeated data from tables is called?", "Normalization", "Indexing", "Sorting", "Joining"],
+        [1, "Which SQL function counts rows?", "COUNT()", "SUM()", "TOTAL()", "NUM()"],
+        [1, "A foreign key is used to?", "Link two tables", "Delete data", "Sort data", "Encrypt data"],
+        [1, "Which clause sorts the result?", "ORDER BY", "SORT BY", "GROUP BY", "ARRANGE"],
+        [2, "In ACID properties, what does the 'A' stand for?", "Atomicity", "Accuracy", "Availability", "Authority"],
+        [2, "Which normal form removes partial dependency?", "2NF", "1NF", "3NF", "4NF"],
+        [2, "Which JOIN returns only the matching rows from both tables?", "INNER JOIN", "LEFT JOIN", "FULL OUTER JOIN", "CROSS JOIN"],
+        [2, "CREATE and ALTER belong to which SQL category?", "DDL", "DML", "DCL", "TCL"],
+        [2, "COMMIT and ROLLBACK belong to which SQL category?", "TCL", "DDL", "DML", "DCL"],
+        [2, "What is a candidate key?", "A minimal set of columns that can uniquely identify a row", "Any column with text", "A key used only for linking tables", "A key used to encrypt data"]
+      ]
+    };
+  </script>
+
+  <!-- =====================================================
+       PART 5: THE BRAIN (JavaScript)
+       ===================================================== -->
+  <script id="app">
+    (function () {
+      // ---------- Settings you can change ----------
+      const QUESTIONS = { easy: 4, medium: 3, hard: 3 };  // 10 questions per round
+      const START_LIVES = 3;
+      const RUN_FOR_LIFE = 3;       // correct answers in a row to win back 1 life
+      const RESCUE_TOTAL = 15;      // medium questions to save a broken streak
+      const RESCUE_PASS = 10;       // correct answers needed to save the streak
+      const SLOW_AFTER = [15, 25, 40]; // seconds after which a bar turns orange (easy, medium, hard)
+
+      const TOPICS = [
+        { id: "c", name: "C Programming", icon: "⚙️" },
+        { id: "office", name: "MS Windows & Office", icon: "🗂️" },
+        { id: "evs", name: "Environmental Studies", icon: "🌱" },
+        { id: "iks", name: "Indian Knowledge System", icon: "📜" },
+        { id: "math", name: "Mathematics Foundation", icon: "➗" },
+        { id: "web", name: "HTML / CSS", icon: "🎨" },
+        { id: "java", name: "Java", icon: "☕" },
+        { id: "python", name: "Python", icon: "🐍" },
+        { id: "dbms", name: "DBMS", icon: "🗄️" }
+      ];
+      const LEVELS = ["Easy", "Medium", "Hard"];
+      const LETTER = ["E", "M", "H"];
+
+      // ---------- Small helper tools ----------
+      const $ = id => document.getElementById(id);
+      function load(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+      function save(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+      function shuffle(a) {
+        const b = [...a];
+        for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; }
+        return b;
+      }
+      function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+      function toQ(r) { return { d: r[0], q: r[1], correct: r[2], opts: shuffle([r[2], r[3], r[4], r[5]]) }; }
+      function topicName(id) { return TOPICS.find(t => t.id === id).name; }
+
+      function today() {
+        const d = new Date();
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      }
+      function daysBetween(a, b) {
+        return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
+      }
+
+      let toastTimer = null;
+      function toast(msg) {
+        let t = document.querySelector(".toast");
+        if (!t) { t = document.createElement("div"); t.className = "toast"; document.body.appendChild(t); }
+        t.textContent = msg;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.remove(), 3200);
+      }
+
+      // ---------- Sound (phone reads the words aloud) ----------
+      let muted = load("nq_muted", "0") === "1";
+      function speak(text) {
+        if (muted || !("speechSynthesis" in window)) return;
+        try {
+          speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = "en-IN"; u.rate = 1; u.pitch = text === "Oh no!" ? 0.8 : 1.2;
+          speechSynthesis.speak(u);
+        } catch (e) {}
+      }
+      function renderSound() { $("soundBtn").textContent = muted ? "🔇" : "🔊"; }
+      $("soundBtn").onclick = () => { muted = !muted; save("nq_muted", muted ? "1" : "0"); renderSound(); };
+
+      // ---------- Theme switch ----------
+      function setTheme(t) {
+        document.documentElement.setAttribute("data-theme", t);
+        $("themeBtn").textContent = t === "dark" ? "☀️ Soft" : "🌙 Coder";
+        save("nq_theme", t);
+      }
+      $("themeBtn").onclick = () => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+
+      // ---------- Screens ----------
+      function show(name) {
+        ["home", "quiz", "result"].forEach(s => $(s).classList.add("hidden"));
+        $(name).classList.remove("hidden");
+        window.scrollTo(0, 0);
+      }
+
+      // ---------- Daily streak ----------
+      function checkStreak() {
+        const last = load("nq_last", "");
+        const streak = Number(load("nq_streak", "0"));
+        if (last && streak > 0 && load("nq_pending", "") === "" && daysBetween(last, today()) > 1) {
+          save("nq_pending", String(streak));
+        }
+      }
+      function markPlayed() {
+        const t = today();
+        if (load("nq_last", "") !== t) {
+          save("nq_streak", String(Number(load("nq_streak", "0")) + 1));
+          save("nq_last", t);
+        }
+      }
+      function renderStreak() {
+        const pending = load("nq_pending", "");
+        if (pending !== "") {
+          $("streakChip").textContent = "🔥 " + pending + " 💔";
+          $("banner").classList.remove("hidden");
+          $("bannerText").textContent = "💔 Your " + pending + "-day streak is broken! Answer " + RESCUE_TOTAL +
+            " medium questions (at least " + RESCUE_PASS + " correct) to save it, or start again from 0.";
+        } else {
+          $("streakChip").textContent = "🔥 " + load("nq_streak", "0");
+          $("banner").classList.add("hidden");
+        }
+      }
+      $("resetStreakBtn").onclick = () => {
+        save("nq_streak", "0"); save("nq_last", ""); save("nq_pending", "");
+        renderStreak(); toast("Fresh start! Play today to begin a new streak 🔥");
+      };
+
+      // ---------- Home: topic cards ----------
+      function renderGrid() {
+        const g = $("grid");
+        g.innerHTML = "";
+        TOPICS.forEach(t => {
+          const best = load("nq_best_" + t.id, "");
+          const b = document.createElement("button");
+          b.className = "topic";
+          b.innerHTML = '<span class="ico">' + t.icon + '</span><span class="tname">' + t.name +
+            '</span><span class="tbest">' + (best === "" ? "Not played yet" : "Best: " + best + "/10") + "</span>";
+          b.onclick = () => startRound(t.id);
+          g.appendChild(b);
+        });
+      }
+      function goHome() { renderStreak(); renderGrid(); show("home"); }
+
+      // ---------- Game state ----------
+      let S = null;
+
+      function startRound(topicId) {
+        if (load("nq_pending", "") !== "") { toast("Your streak is broken. Save it or start again first 🔥"); window.scrollTo(0, 0); return; }
+        const pool = BANK[topicId].map(toQ);
+        const pick = (d, n) => shuffle(pool.filter(x => x.d === d)).slice(0, n);
+        const qs = [...pick(0, QUESTIONS.easy), ...pick(1, QUESTIONS.medium), ...pick(2, QUESTIONS.hard)];
+        S = { mode: "normal", topic: topicId, qs, i: 0, lives: START_LIVES, run: 0, results: [], correct: 0, over: false, locked: false, t0: 0 };
+        show("quiz");
+        showQuestion();
+      }
+
+      function startRescue() {
+        let pool = [];
+        TOPICS.forEach(t => { pool = pool.concat(BANK[t.id].filter(r => r[0] === 1).map(toQ)); });
+        const qs = shuffle(pool).slice(0, RESCUE_TOTAL);
+        S = { mode: "rescue", topic: "rescue", qs, i: 0, lives: 0, run: 0, results: [], correct: 0, over: false, locked: false, t0: 0 };
+        show("quiz");
+        showQuestion();
+      }
+      $("rescueBtn").onclick = startRescue;
+
+      // ---------- Lives icons (little computers) ----------
+      function pc(alive) {
+        return '<svg class="pc ' + (alive ? "on" : "off") + '" viewBox="0 0 32 32" width="28" height="28">' +
+          '<rect x="3" y="4" width="26" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2.4"/>' +
+          '<rect x="6" y="7" width="20" height="11" rx="1" fill="currentColor" opacity="' + (alive ? ".35" : ".08") + '"/>' +
+          '<path d="M12 26h8M16 21v5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>' +
+          (alive ? "" : '<path d="M9 8l14 9M23 8L9 17" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/>') + "</svg>";
+      }
+      function renderLives() {
+        if (S.mode === "rescue") { $("lives").innerHTML = ""; $("runInfo").textContent = ""; return; }
+        let h = "";
+        for (let i = 0; i < START_LIVES; i++) h += pc(i < S.lives);
+        $("lives").innerHTML = h;
+        $("runInfo").textContent = "Streak " + S.run + "/" + RUN_FOR_LIFE + " → +1 life";
+      }
+
+      // ---------- Show a question ----------
+      function showQuestion() {
+        const q = S.qs[S.i];
+        S.locked = false;
+        $("qTopic").textContent = S.mode === "rescue" ? "Streak Rescue" : topicName(S.topic);
+        $("qCount").textContent = "Question " + (S.i + 1) + "/" + S.qs.length;
+        const lv = $("qLevel");
+        lv.textContent = LEVELS[q.d];
+        lv.className = "badge lv" + q.d;
+        $("barFill").style.width = (S.i / S.qs.length) * 100 + "%";
+        $("question").textContent = q.q;
+        $("feedback").textContent = "";
+        $("feedback").style.color = "";
+        $("nextBtn").classList.add("hidden");
+        renderLives();
+
+        const box = $("options");
+        box.innerHTML = "";
+        q.opts.forEach(text => {
+          const b = document.createElement("button");
+          b.className = "opt";
+          b.textContent = text;
+          b.onclick = () => answer(b, text);
+          box.appendChild(b);
+        });
+        S.t0 = Date.now();   // we measure time silently (no timer on screen)
+      }
+
+      // ---------- Check an answer ----------
+      function answer(btn, choice) {
+        if (S.locked) return;
+        S.locked = true;
+        const q = S.qs[S.i];
+        const time = (Date.now() - S.t0) / 1000;
+        const ok = choice === q.correct;
+        const fb = $("feedback");
+
+        document.querySelectorAll("#options .opt").forEach(b => {
+          b.disabled = true;
+          if (b.textContent === q.correct) b.classList.add("correct");
+        });
+        if (!ok) btn.classList.add("wrong");
+
+        S.results.push({ d: q.d, q: q.q, correct: q.correct, picked: choice, ok, time });
+
+        if (ok) {
+          S.correct++;
+          S.run++;
+          speak("Well done!");
+          fb.style.color = "var(--good)";
+          fb.textContent = "✅ Correct! Well done!";
+          if (S.mode === "normal" && S.run >= RUN_FOR_LIFE) {
+            S.run = 0;
+            if (S.lives < START_LIVES) { S.lives++; fb.textContent += " +1 life regained 🖥️"; }
+          }
+        } else {
+          S.run = 0;
+          speak("Oh no!");
+          fb.style.color = "var(--bad)";
+          fb.textContent = "❌ Oh no! Right answer: " + q.correct;
+          if (S.mode === "normal") S.lives--;
+        }
+        renderLives();
+
+        if (S.mode === "normal" && S.lives <= 0) S.over = true;
+        const last = S.over || S.i >= S.qs.length - 1;
+        $("nextBtn").textContent = last ? "See my chart →" : "Next →";
+        $("nextBtn").classList.remove("hidden");
+      }
+
+      $("nextBtn").onclick = () => {
+        if (S.over || S.i >= S.qs.length - 1) finish();
+        else { S.i++; showQuestion(); }
+      };
+      $("quitBtn").onclick = () => { speechCancel(); goHome(); };
+      function speechCancel() { try { speechSynthesis.cancel(); } catch (e) {} }
+
+      // ---------- Confetti ----------
+      function confetti() {
+        const box = $("confetti");
+        const icons = ["🎉", "🥳", "🔥", "✨", "🎊", "😄"];
+        for (let i = 0; i < 36; i++) {
+          const s = document.createElement("span");
+          s.textContent = icons[Math.floor(Math.random() * icons.length)];
+          s.style.left = Math.random() * 100 + "vw";
+          s.style.animationDuration = (2.5 + Math.random() * 2.5) + "s";
+          s.style.animationDelay = Math.random() * 1.2 + "s";
+          box.appendChild(s);
+        }
+        setTimeout(() => { box.innerHTML = ""; }, 7000);
+      }
+
+      // ---------- Result screen ----------
+      function finish() {
+        speechCancel();
+        show("result");
+        const total = S.results.length;
+        const perfect = S.mode === "normal" && !S.over && S.correct === S.qs.length;
+        let title, sub;
+
+        if (S.mode === "normal") {
+          markPlayed();
+          const key = "nq_best_" + S.topic;
+          const best = Number(load(key, "0"));
+          if (S.correct > best) save(key, String(S.correct));
+          if (perfect) { title = "PERFECT SCORE! 🏆"; sub = "All " + S.qs.length + " answers correct. You are on fire!"; }
+          else if (S.over) { title = "Out of lives 🖥️"; sub = "Study the chart below, then try again. You've got this!"; }
+          else { title = "Round complete!"; sub = S.correct + " out of " + S.qs.length + " correct. Keep going!"; }
+        } else {
+          if (S.correct >= RESCUE_PASS) {
+            const old = Number(load("nq_pending", "0"));
+            save("nq_streak", String(old + 1)); save("nq_last", today()); save("nq_pending", "");
+            title = "Streak saved! 🔥"; sub = "You got " + S.correct + "/" + S.qs.length + ". Your streak is now " + (old + 1) + " days.";
+          } else {
+            title = "Not saved yet 💔"; sub = "You got " + S.correct + "/" + S.qs.length + ". You need " + RESCUE_PASS + ". Try again!";
+          }
+        }
+
+        $("rTitle").textContent = title;
+        $("rSub").textContent = sub;
+        $("party").classList.toggle("hidden", !(perfect || (S.mode === "rescue" && S.correct >= RESCUE_PASS)));
+        if (perfect) confetti();
+
+        // Stats
+        const times = S.results.map(r => r.time);
+        const avg = times.reduce((a, b) => a + b, 0) / (times.length || 1);
+        $("stats").innerHTML =
+          '<div class="stat"><b>' + S.correct + "/" + total + "</b><small>Score</small></div>" +
+          '<div class="stat"><b>' + avg.toFixed(1) + "s</b><small>Average</small></div>" +
+          '<div class="stat"><b>' + Math.min(...times).toFixed(1) + "s</b><small>Quickest</small></div>" +
+          '<div class="stat"><b>' + Math.max(...times).toFixed(1) + "s</b><small>Slowest</small></div>";
+
+        // Time chart: green = quick, orange = took long, ✗ = wrong
+        const maxT = Math.max(10, ...times);
+        let chart = "";
+        S.results.forEach((r, i) => {
+          const slow = r.time > SLOW_AFTER[r.d];
+          chart += '<div class="crow ' + (r.ok ? "ok" : "bad") + '">' +
+            '<span class="clab mono">Q' + (i + 1) + "·" + LETTER[r.d] + "</span>" +
+            '<div class="ctrack"><div class="cfill ' + (slow ? "slow" : "fast") + '" style="width:' + Math.max(4, (r.time / maxT) * 100) + '%"></div></div>' +
+            '<span class="ctime">' + r.time.toFixed(1) + "s</span>" +
+            '<span class="cmark">' + (r.ok ? "✓" : "✗") + "</span></div>";
+        });
+        $("chart").innerHTML = chart;
+
+        // Wrong answers review
+        const wrong = S.results.filter(r => !r.ok);
+        $("reviewBox").classList.toggle("hidden", wrong.length === 0);
+        $("review").innerHTML = wrong.map(r =>
+          '<div class="review-item">' + esc(r.q) + "<br>Your answer: " + esc(r.picked) + "<br>Correct: <b>" + esc(r.correct) + "</b></div>"
+        ).join("");
+
+        $("againBtn").textContent = S.mode === "rescue" ? "Try again" : "Play again";
+      }
+
+      $("againBtn").onclick = () => { if (S.mode === "rescue") startRescue(); else startRound(S.topic); };
+      $("homeBtn").onclick = goHome;
+
+      // ---------- Start everything ----------
+      setTheme(load("nq_theme", "dark"));
+      renderSound();
+      checkStreak();
+      goHome();
+    })();
+  </script>
+</body>
+</html>
